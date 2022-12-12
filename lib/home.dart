@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:application/apiService/service.dart';
 import 'package:application/auth/login_signup.dart';
 import 'package:application/firebase/authentication.dart';
+import 'package:application/news.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class HomePage extends StatefulWidget {
@@ -19,8 +21,13 @@ class _HomePageState extends State<HomePage> {
 
   var response;
   loadData() async {
-    response = await Myservices()
-        .getNews(searchQuery == "" ? "b" : searchQuery, filterVal);
+    response = await Myservices().getNews(
+        searchQuery == ""
+            ? "b"
+            : searchQuery == " "
+                ? "b"
+                : searchQuery,
+        filterVal);
     setState(() {
       loading = false;
     });
@@ -79,7 +86,12 @@ class _HomePageState extends State<HomePage> {
                       icon: Icon(Icons.search),
                       onPressed: () async {
                         response = await Myservices().getNews(
-                            searchQuery != "" ? searchQuery : "b", filterVal);
+                            searchQuery != ""
+                                ? searchQuery != " "
+                                    ? searchQuery
+                                    : "b"
+                                : "b",
+                            filterVal);
                         setState(() {
                           loading = false;
                         });
@@ -115,120 +127,155 @@ class _HomePageState extends State<HomePage> {
               ),
               Expanded(
                   child: !loading
-                      ? ListView.builder(
-                          physics: BouncingScrollPhysics(),
-                          itemCount: response["totalResults"],
-                          padding: EdgeInsets.all(10),
-                          shrinkWrap: true,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: EdgeInsets.all(8),
-                              child: Container(
-                                height: 120,
-                                width: MediaQuery.of(context).size.width - 80,
-                                padding: EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(15),
-                                    boxShadow: [
-                                      BoxShadow(
-                                          offset: Offset.zero, blurRadius: 3)
-                                    ],
-                                    border: Border.all(),
-                                    color: Colors.white),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    SingleChildScrollView(
+                      ? response != null
+                          ? ListView.builder(
+                              physics: BouncingScrollPhysics(),
+                              itemCount: response["totalResults"] == null
+                                  ? 0
+                                  : response['totalResults'],
+                              padding: EdgeInsets.all(10),
+                              shrinkWrap: true,
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                    padding: EdgeInsets.all(8),
+                                    child: InkWell(
+                                      onTap: () {
+                                        callNewsPage(
+                                            response["articles"][index],
+                                            context);
+                                      },
                                       child: Container(
+                                        height: 120,
                                         width:
                                             MediaQuery.of(context).size.width -
-                                                150,
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                                80,
+                                        padding: EdgeInsets.all(10),
+                                        decoration: BoxDecoration(
+                                            borderRadius:
+                                                BorderRadius.circular(15),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                  offset: Offset.zero,
+                                                  blurRadius: 3)
+                                            ],
+                                            border: Border.all(),
+                                            color: Colors.white),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
                                           children: [
-                                            Row(
-                                              children: [
-                                                Text(
-                                                  DateFormat(
-                                                          'yyyy-MM-dd - kk:mm')
-                                                      .format(DateTime.parse(
+                                            SingleChildScrollView(
+                                              child: Container(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width -
+                                                    150,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Row(
+                                                      children: [
+                                                        Text(
+                                                          DateFormat(
+                                                                  'yyyy-MM-dd - kk:mm')
+                                                              .format(DateTime.parse(
+                                                                  response["articles"]
+                                                                          [
+                                                                          index]
+                                                                      [
+                                                                      'publishedAt']))
+                                                              .toString(),
+                                                          style: TextStyle(
+                                                              fontSize: 10),
+                                                        ),
+                                                        SizedBox(
+                                                          width: 15,
+                                                        ),
+                                                        Text(
                                                           response["articles"]
-                                                                  [index]
-                                                              ['publishedAt']))
-                                                      .toString(),
-                                                  style:
-                                                      TextStyle(fontSize: 10),
-                                                ),
-                                                SizedBox(
-                                                  width: 15,
-                                                ),
-                                                Text(
-                                                  response["articles"][index]
-                                                      ["source"]["name"],
-                                                  style: TextStyle(
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            Text(
-                                              response["articles"][index]
-                                                  ['title'],
-                                              style: TextStyle(
-                                                  color: Colors.blue,
-                                                  fontSize: response["articles"]
                                                                       [index]
-                                                                  ['title']
-                                                              .length >
-                                                          25
-                                                      ? 13
-                                                      : 16),
+                                                                  ["source"]
+                                                              ["name"],
+                                                          style: TextStyle(
+                                                            fontSize: 10,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Text(
+                                                      response["articles"]
+                                                          [index]['title'],
+                                                      style: TextStyle(
+                                                          color: Colors.blue,
+                                                          fontSize: response["articles"]
+                                                                              [
+                                                                              index]
+                                                                          [
+                                                                          'title']
+                                                                      .length >
+                                                                  25
+                                                              ? 13
+                                                              : 16),
+                                                    ),
+                                                    Text(
+                                                      response["articles"]
+                                                              [index]
+                                                          ['description'],
+                                                      style: TextStyle(
+                                                          fontSize: response["articles"]
+                                                                              [
+                                                                              index]
+                                                                          [
+                                                                          'description']
+                                                                      .length >
+                                                                  150
+                                                              ? 8
+                                                              : 12),
+                                                    )
+                                                  ],
+                                                ),
+                                              ),
                                             ),
-                                            Text(
-                                              response["articles"][index]
-                                                  ['description'],
-                                              style: TextStyle(
-                                                  fontSize: response["articles"]
-                                                                      [index][
-                                                                  'description']
-                                                              .length >
-                                                          150
-                                                      ? 8
-                                                      : 12),
+                                            ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              child: Image.network(
+                                                response['articles'][index]
+                                                    ['urlToImage'],
+                                                height: 80,
+                                                width: 60,
+                                              ),
                                             )
                                           ],
                                         ),
                                       ),
-                                    ),
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: Image.network(
-                                        response['articles'][index]
-                                            ['urlToImage'],
-                                        height: 80,
-                                        width: 60,
-                                      ),
-                                    )
-                                  ],
+                                    ));
+                              })
+                          : Column(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(
+                                  height: 15,
                                 ),
-                              ),
-                            );
-                          })
-                      : Column(
-                          children: [
-                            CircularProgressIndicator(),
-                            SizedBox(
-                              height: 15,
-                            ),
-                            Text("Please wait ......")
-                          ],
-                        )),
+                                Text("Please wait ......")
+                              ],
+                            )
+                      : Text("")),
             ],
           ),
         ),
       ),
     );
   }
+}
+
+void callNewsPage(dynamic res, context) async {
+  var response = await res;
+  print("from home dart -----------");
+  print(" ye response = $response \n");
+  Timer(
+      Duration(milliseconds: 150),
+      () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => NewsPage(res: response))));
 }

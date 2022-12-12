@@ -39,6 +39,7 @@ dependencies:
   flutter_dotenv:
   intl:
   firebase_auth:
+  url_launcher:
   firebase_core:
   flutter_facebook_auth:
   google_sign_in:

@@ -32,7 +32,7 @@ class getAuth {
     try {
       var user =
           await _auth.signInWithEmailAndPassword(email: email, password: pass);
-      Navigator.push(
+      Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => HomePage()));
     } catch (e) {
       print("Error $e");
